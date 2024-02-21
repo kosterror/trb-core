@@ -1,6 +1,15 @@
 version: "3.9"
 
 services:
+  backend:
+    container_name: trb-core-back
+    build: ./
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    env_file:
+      - .env
   postgres:
     container_name: trb-core-db
     image: postgres:16.2
