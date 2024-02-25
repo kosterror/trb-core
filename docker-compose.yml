@@ -1,23 +1,28 @@
 version: "3.9"
 
 services:
-  backend:
+  trb-core-back:
     container_name: trb-core-back
     build: ./
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
+      - trb-core-db
     env_file:
       - .env
-  postgres:
+  trb-core-db:
     container_name: trb-core-db
-    image: postgres:16.2
+    image: postgres:15
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5432:5432"
+      - "5430:5432"
+    volumes:
+      - trb-core-db:/var/lib/postgresql/data
     env_file:
       - .env
+
+volumes:
+  trb-core-db: { }

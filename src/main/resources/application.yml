@@ -4,7 +4,7 @@ spring:
   application:
     name: trb-core
   datasource:
-    url: jdbc:postgresql://postgres:5432/${DB_NAME}
+    url: jdbc:postgresql://trb-core-db:5432/${DB_NAME}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
   flyway:
