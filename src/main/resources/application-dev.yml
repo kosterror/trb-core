@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5400/trb-core
+    username: trb-core
+    password: trb-core
