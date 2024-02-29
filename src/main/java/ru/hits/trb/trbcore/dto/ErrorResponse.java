@@ -13,9 +13,6 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 @Builder(builderMethodName = "Builder")
 public class ErrorResponse {
 
-    @Schema(requiredMode = REQUIRED, description = "HTTP статус код")
-    private int httpCode;
-
     @Schema(requiredMode = REQUIRED, description = "Задекларированный код ошибки")
     private int code;
 

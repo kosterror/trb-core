@@ -6,11 +6,10 @@ import org.springframework.stereotype.Service;
 import ru.hits.trb.trbcore.dto.account.AccountDto;
 import ru.hits.trb.trbcore.dto.account.NewAccountDto;
 import ru.hits.trb.trbcore.entity.enumeration.AccountType;
-import ru.hits.trb.trbcore.exception.ApplicationException;
+import ru.hits.trb.trbcore.exception.InvalidAccountType;
 import ru.hits.trb.trbcore.mapper.AccountMapper;
 import ru.hits.trb.trbcore.repository.AccountRepository;
 import ru.hits.trb.trbcore.service.AccountService;
-import ru.hits.trb.trbcore.util.Error;
 
 @Slf4j
 @Service
@@ -23,10 +22,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountDto createClientAccount(NewAccountDto dto) {
         if (dto.getType() == AccountType.MASTER) {
-            throw new ApplicationException(
-                    Error.INCORRECT_ACCOUNT_TYPE_WHEN_CREATING,
-                    "It's impossible to create master account"
-            );
+            throw new InvalidAccountType("It's impossible to create account with master type");
         }
 
         var accountEntity = mapper.newDtoToEntity(dto);
