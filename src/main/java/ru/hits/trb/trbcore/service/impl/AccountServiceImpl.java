@@ -7,9 +7,12 @@ import ru.hits.trb.trbcore.dto.account.AccountDto;
 import ru.hits.trb.trbcore.dto.account.NewAccountDto;
 import ru.hits.trb.trbcore.entity.enumeration.AccountType;
 import ru.hits.trb.trbcore.exception.InvalidAccountType;
+import ru.hits.trb.trbcore.exception.NotFoundException;
 import ru.hits.trb.trbcore.mapper.AccountMapper;
 import ru.hits.trb.trbcore.repository.AccountRepository;
 import ru.hits.trb.trbcore.service.AccountService;
+
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -29,6 +32,14 @@ public class AccountServiceImpl implements AccountService {
         accountEntity = repository.save(accountEntity);
 
         return mapper.entityToDto(accountEntity);
+    }
+
+    @Override
+    public AccountDto getAccount(UUID id) {
+        return repository
+                .findById(id)
+                .map(mapper::entityToDto)
+                .orElseThrow(() -> new NotFoundException("Account with id '" + id + "' not found"));
     }
 
 }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.hits.trb.trbcore.dto.ErrorResponse;
 import ru.hits.trb.trbcore.exception.InvalidAccountType;
+import ru.hits.trb.trbcore.exception.NotFoundException;
 
 import java.util.HashMap;
 
@@ -60,6 +61,16 @@ public class ExceptionControllerAdvice {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(buildResponse(ErrorCodes.BAD_REQUEST, exception.getMessage()));
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFoundException(HttpServletRequest request,
+                                                                 NotFoundException exception) {
+        logException(request, exception);
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(buildResponse(ErrorCodes.NOT_FOUND, exception.getMessage()));
     }
 
     private void logException(HttpServletRequest request, Exception exception) {
