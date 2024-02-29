@@ -9,3 +9,14 @@ spring:
     password: ${DB_PASSWORD}
   flyway:
     locations: migrations
+logging:
+  level:
+    org:
+      springframework:
+        web:
+          filter:
+            org:
+              springframework:
+                web:
+                  filter:
+                    CommonsRequestLoggingFilter: DEBUG
