@@ -7,6 +7,10 @@ spring:
     url: jdbc:postgresql://trb-core-db:5432/${DB_NAME}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
   flyway:
     locations: migrations
 logging:

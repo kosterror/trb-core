@@ -50,7 +50,8 @@ public class AccountServiceImpl implements AccountService {
         repository.save(account);
     }
 
-    private AccountEntity findAccount(UUID id) {
+    @Override
+    public AccountEntity findAccount(UUID id) {
         return repository
                 .findByIdAndIsClosed(id, false)
                 .orElseThrow(() -> new NotFoundException("Account with id '" + id + "' not found"));

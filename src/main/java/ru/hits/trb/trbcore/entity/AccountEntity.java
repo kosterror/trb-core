@@ -1,20 +1,28 @@
 package ru.hits.trb.trbcore.entity;
 
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.springframework.data.relational.core.mapping.Table;
+import lombok.NoArgsConstructor;
 import ru.hits.trb.trbcore.entity.enumeration.AccountType;
 
 import java.util.Date;
 import java.util.UUID;
 
 @Data
-@Builder(builderMethodName = "Builder")
-@EqualsAndHashCode(callSuper = true)
-@Table("account")
-public class AccountEntity extends BaseEntity {
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "account")
+public class AccountEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Enumerated(EnumType.STRING)
     private AccountType type;
 
     private long balance;

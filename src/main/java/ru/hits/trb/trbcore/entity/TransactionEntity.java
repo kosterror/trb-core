@@ -1,9 +1,11 @@
 package ru.hits.trb.trbcore.entity;
 
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.springframework.data.relational.core.mapping.Table;
+import lombok.NoArgsConstructor;
+import ru.hits.trb.trbcore.entity.enumeration.TransactionCode;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionState;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionType;
 
@@ -11,10 +13,16 @@ import java.util.Date;
 import java.util.UUID;
 
 @Data
-@Builder(builderMethodName = "Builder")
-@EqualsAndHashCode(callSuper = true)
-@Table("transaction")
-public class TransactionEntity extends BaseEntity {
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "transaction")
+public class TransactionEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     private Date date;
 
@@ -24,11 +32,14 @@ public class TransactionEntity extends BaseEntity {
 
     private long amount;
 
+    @Enumerated(EnumType.STRING)
     private TransactionType type;
 
+    @Enumerated(EnumType.STRING)
     private TransactionState state;
 
-    private int code;
+    @Enumerated(EnumType.ORDINAL)
+    private TransactionCode code;
 
 }
 

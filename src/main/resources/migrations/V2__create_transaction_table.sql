@@ -7,7 +7,5 @@ create table transaction
     amount           bigint      not null,
     type             varchar(64) not null,
     state            varchar(64) not null,
-    code             int         not null,
-    foreign key (payer_account_id) references account (id) on delete restrict,
-    foreign key (payee_account_id) references account (id) on delete restrict
+    code smallint not null
 );
