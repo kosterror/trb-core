@@ -1,0 +1,166 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "trb-core",
+    "description": "Ядро trust-bank",
+    "version": "1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Generated server url"
+    }
+  ],
+  "paths": {
+    "/api/v1/accounts": {
+      "post": {
+        "tags": [
+          "API для счетов"
+        ],
+        "summary": "Создать счет для клиента",
+        "operationId": "createClientAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewAccountDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accounts/{id}": {
+      "get": {
+        "tags": [
+          "API для счетов"
+        ],
+        "summary": "Получить информацию о счете по id",
+        "operationId": "getAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "NewAccountDto": {
+        "required": [
+          "clientFullName",
+          "externalClientId",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Тип счета",
+            "example": "DEPOSIT",
+            "enum": [
+              "DEPOSIT",
+              "LOAN",
+              "MASTER"
+            ]
+          },
+          "clientFullName": {
+            "type": "string",
+            "description": "ФИО владельца счета",
+            "example": "Иванов Иван Иванович"
+          },
+          "externalClientId": {
+            "type": "string",
+            "description": "Идентификатор пользователя из trb-users",
+            "format": "uuid"
+          }
+        }
+      },
+      "AccountDto": {
+        "required": [
+          "balance",
+          "clientFullName",
+          "creationDate",
+          "externalClientId",
+          "id",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Идентификатор счета",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "description": "Тип банковского счета",
+            "enum": [
+              "DEPOSIT",
+              "LOAN",
+              "MASTER"
+            ]
+          },
+          "balance": {
+            "type": "integer",
+            "description": "Баланс счета",
+            "format": "int64"
+          },
+          "clientFullName": {
+            "type": "string",
+            "description": "ФИО владельца счета"
+          },
+          "externalClientId": {
+            "type": "string",
+            "description": "Внешний идентификатор пользователя из trb-users"
+          },
+          "creationDate": {
+            "type": "string",
+            "description": "Дата создания счета",
+            "example": "1709372199882"
+          },
+          "closingDate": {
+            "type": "string",
+            "description": "Дата закрытия счета",
+            "example": "1709372199882"
+          },
+          "closed": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
