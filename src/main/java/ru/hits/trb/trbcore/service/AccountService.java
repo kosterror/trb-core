@@ -10,4 +10,6 @@ public interface AccountService {
     AccountDto createClientAccount(NewAccountDto dto);
 
     AccountDto getAccount(UUID id);
+
+    void closeAccount(UUID id);
 }

@@ -33,4 +33,10 @@ public class AccountController {
         return service.getAccount(id);
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Закрыть счет")
+    public void closeAccount(@PathVariable UUID id) {
+        service.closeAccount(id);
+    }
+
 }

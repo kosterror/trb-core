@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.hits.trb.trbcore.dto.account.AccountDto;
 import ru.hits.trb.trbcore.dto.account.NewAccountDto;
+import ru.hits.trb.trbcore.entity.AccountEntity;
 import ru.hits.trb.trbcore.entity.enumeration.AccountType;
 import ru.hits.trb.trbcore.exception.InvalidAccountTypeException;
 import ru.hits.trb.trbcore.exception.NotFoundException;
@@ -36,9 +37,22 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public AccountDto getAccount(UUID id) {
+        var account = findAccount(id);
+
+        return mapper.entityToDto(account);
+    }
+
+    @Override
+    public void closeAccount(UUID id) {
+        var account = findAccount(id);
+        account.setClosed(true);
+
+        repository.save(account);
+    }
+
+    private AccountEntity findAccount(UUID id) {
         return repository
-                .findById(id)
-                .map(mapper::entityToDto)
+                .findByIdAndIsClosed(id, false)
                 .orElseThrow(() -> new NotFoundException("Account with id '" + id + "' not found"));
     }
 
