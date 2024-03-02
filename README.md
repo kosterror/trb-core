@@ -15,5 +15,5 @@ docker-compose up --build
 
 ### API
 
-- API в формате 3.0.1 доступно в [файле](./docs/api-docs.yaml)
+- API в формате OpenAPI 3.0.1 доступно в [файле](./docs/api-docs.yaml)
 - Swagger после запуска доступен по [адресу](http://localhost:8080/swagger-ui/index.html) 
