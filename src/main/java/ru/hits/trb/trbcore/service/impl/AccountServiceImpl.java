@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.hits.trb.trbcore.dto.account.AccountDto;
 import ru.hits.trb.trbcore.dto.account.NewAccountDto;
 import ru.hits.trb.trbcore.entity.enumeration.AccountType;
-import ru.hits.trb.trbcore.exception.InvalidAccountType;
+import ru.hits.trb.trbcore.exception.InvalidAccountTypeException;
 import ru.hits.trb.trbcore.exception.NotFoundException;
 import ru.hits.trb.trbcore.mapper.AccountMapper;
 import ru.hits.trb.trbcore.repository.AccountRepository;
@@ -25,7 +25,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountDto createClientAccount(NewAccountDto dto) {
         if (dto.getType() == AccountType.MASTER) {
-            throw new InvalidAccountType("It's impossible to create account with master type");
+            throw new InvalidAccountTypeException("It's impossible to create account with master type");
         }
 
         var accountEntity = mapper.newDtoToEntity(dto);

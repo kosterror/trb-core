@@ -9,7 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.hits.trb.trbcore.dto.ErrorResponse;
-import ru.hits.trb.trbcore.exception.InvalidAccountType;
+import ru.hits.trb.trbcore.exception.InvalidAccountTypeException;
 import ru.hits.trb.trbcore.exception.NotFoundException;
 
 import java.util.HashMap;
@@ -53,9 +53,9 @@ public class ExceptionControllerAdvice {
                 );
     }
 
-    @ExceptionHandler(InvalidAccountType.class)
+    @ExceptionHandler(InvalidAccountTypeException.class)
     public ResponseEntity<ErrorResponse> handleApplicationException(HttpServletRequest request,
-                                                                    InvalidAccountType exception) {
+                                                                    InvalidAccountTypeException exception) {
         logException(request, exception);
 
         return ResponseEntity

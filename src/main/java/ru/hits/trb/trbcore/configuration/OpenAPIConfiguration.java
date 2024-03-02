@@ -14,7 +14,7 @@ public class OpenAPIConfiguration {
                 .info(new Info()
                         .title("trb-core")
                         .version("1")
-                        .description("Ядро проекта trust-bank")
+                        .description("Ядро trust-bank")
                 );
     }
 
