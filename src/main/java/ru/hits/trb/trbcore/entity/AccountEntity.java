@@ -35,6 +35,6 @@ public class AccountEntity {
 
     private Date closingDate;
 
-    private boolean isClosed;
+    private Boolean isClosed;
 
 }

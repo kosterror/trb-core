@@ -13,6 +13,7 @@ import ru.hits.trb.trbcore.mapper.AccountMapper;
 import ru.hits.trb.trbcore.repository.AccountRepository;
 import ru.hits.trb.trbcore.service.AccountService;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -45,7 +46,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public void closeAccount(UUID id) {
         var account = findAccount(id);
-        account.setClosed(true);
+        account.setIsClosed(true);
 
         repository.save(account);
     }
@@ -55,6 +56,15 @@ public class AccountServiceImpl implements AccountService {
         return repository
                 .findByIdAndIsClosed(id, false)
                 .orElseThrow(() -> new NotFoundException("Account with id '" + id + "' not found"));
+    }
+
+    @Override
+    public List<AccountDto> getUserAccounts(UUID id) {
+        return repository
+                .findAllByExternalClientIdAndIsClosedOrderByCreationDate(id, false)
+                .stream()
+                .map(mapper::entityToDto)
+                .toList();
     }
 
 }

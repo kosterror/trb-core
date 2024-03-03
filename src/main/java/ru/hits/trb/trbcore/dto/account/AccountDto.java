@@ -44,6 +44,6 @@ public class AccountDto {
     private Date closingDate;
 
     @Schema(description = "Признак закрытия счета", requiredMode = REQUIRED)
-    private boolean isClosed;
+    private Boolean isClosed;
 
 }

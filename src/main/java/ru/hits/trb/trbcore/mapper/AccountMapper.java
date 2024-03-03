@@ -16,6 +16,7 @@ public interface AccountMapper {
 
     @Mapping(target = "balance", expression = "java(0L)")
     @Mapping(target = "creationDate", expression = "java(new java.util.Date())")
+    @Mapping(target = "isClosed", expression = "java(false)")
     AccountEntity newDtoToEntity(NewAccountDto dto);
 
     AccountDto entityToDto(AccountEntity accountEntity);

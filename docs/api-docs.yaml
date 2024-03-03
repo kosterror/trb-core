@@ -7,6 +7,21 @@ servers:
   - url: http://localhost:8080
     description: Generated server url
 paths:
+  /api/v1/transactions/withdrawal:
+    post:
+      tags:
+        - API для счетов
+      summary: Вывести деньги
+      operationId: withdrawal
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnidirectionalTransactionDto'
+        required: true
+      responses:
+        "200":
+          description: OK
   /api/v1/transactions/replenishment:
     post:
       tags:
@@ -41,6 +56,28 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/AccountDto'
+  /api/v1/users/{id}/accounts:
+    get:
+      tags:
+        - API для счетов
+      summary: Получить счета клиента
+      operationId: getUserAccounts
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountDto'
   /api/v1/accounts/{id}:
     get:
       tags:
@@ -120,6 +157,7 @@ components:
         - creationDate
         - externalClientId
         - id
+        - isClosed
         - type
       type: object
       properties:
@@ -152,5 +190,6 @@ components:
           type: string
           description: Дата закрытия счета
           example: "1709372199882"
-        closed:
+        isClosed:
           type: boolean
+          description: Признак закрытия счета
