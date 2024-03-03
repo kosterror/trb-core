@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.hits.trb.trbcore.dto.ErrorResponse;
 import ru.hits.trb.trbcore.exception.InvalidAccountTypeException;
+import ru.hits.trb.trbcore.exception.NotEnoughMoney;
 import ru.hits.trb.trbcore.exception.NotFoundException;
 
 import java.util.HashMap;
@@ -71,6 +72,16 @@ public class ExceptionControllerAdvice {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(buildResponse(ErrorCodes.NOT_FOUND, exception.getMessage()));
+    }
+
+    @ExceptionHandler(NotEnoughMoney.class)
+    public ResponseEntity<ErrorResponse> handleNotFoundException(HttpServletRequest request,
+                                                                 NotEnoughMoney exception) {
+        logException(request, exception);
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(buildResponse(ErrorCodes.NOT_ENOUGH_MONEY_FOR_ACTION, exception.getMessage()));
     }
 
     private void logException(HttpServletRequest request, Exception exception) {

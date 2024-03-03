@@ -5,11 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.hits.trb.trbcore.dto.account.UnidirectionalTransactionDto;
+import ru.hits.trb.trbcore.entity.AccountEntity;
 import ru.hits.trb.trbcore.entity.TransactionEntity;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionCode;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionState;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionType;
 import ru.hits.trb.trbcore.exception.BadRequestException;
+import ru.hits.trb.trbcore.exception.NotEnoughMoney;
 import ru.hits.trb.trbcore.repository.AccountRepository;
 import ru.hits.trb.trbcore.repository.TransactionRepository;
 import ru.hits.trb.trbcore.service.AccountService;
@@ -32,7 +34,7 @@ public class TransactionServiceImpl implements TransactionService {
     public void makeTransferTransaction(UUID payerAccountId,
                                         UUID payeeAccountId,
                                         long amount
-    ) {
+    ) throws NotEnoughMoney {
         if (amount <= 0) {
             throw new BadRequestException("Invalid amount of transaction: " + amount);
         }
@@ -41,10 +43,14 @@ public class TransactionServiceImpl implements TransactionService {
         var payeeAccount = accountService.findAccount(payeeAccountId);
 
         if (payerAccount.getBalance() < amount) {
-            log.error("Payer does not have enough money for transfer");
-            saveNotEnoughMoneyTransaction(payerAccountId, payeeAccountId, amount);
+            saveNotEnoughMoneyTransaction(payerAccountId, payeeAccountId, amount, TransactionType.TRANSFER);
             log.error("Saved rejected transaction");
-            return;
+            throw new NotEnoughMoney("Not enough money for transfer. Payer: "
+                    + payeeAccountId
+                    + ", payee: "
+                    + payeeAccountId
+                    + ", amount: "
+                    + amount);
         }
 
         var transaction = TransactionEntity.builder()
@@ -71,14 +77,7 @@ public class TransactionServiceImpl implements TransactionService {
     public void replenishment(UnidirectionalTransactionDto transactionDto) {
         var account = accountService.findAccount(transactionDto.getAccountId());
 
-        var transaction = TransactionEntity.builder()
-                .date(new Date())
-                .payeeAccountId(account.getId())
-                .amount(transactionDto.getAmount())
-                .type(TransactionType.REPLENISHMENT)
-                .state(TransactionState.DONE)
-                .code(TransactionCode.SUCCESS)
-                .build();
+        var transaction = buildTransaction(transactionDto, account);
 
         account.setBalance(account.getBalance() + transactionDto.getAmount());
 
@@ -87,21 +86,62 @@ public class TransactionServiceImpl implements TransactionService {
         log.info("The replenishment of the account {} was completed successfully", account.getId());
     }
 
+    @Override
+    @Transactional
+    public void withdrawal(UnidirectionalTransactionDto transactionDto) throws NotEnoughMoney {
+        var account = accountService.findAccount(transactionDto.getAccountId());
+        var balance = account.getBalance();
+
+        if (balance < transactionDto.getAmount()) {
+            saveNotEnoughMoneyTransaction(account.getId(),
+                    null,
+                    transactionDto.getAmount(),
+                    TransactionType.WITHDRAWAL
+            );
+            log.error("Not enough money for withdrawal. Saved rejected transaction");
+            throw new NotEnoughMoney("Not enough money for withdrawal. Account : "
+                    + account.getId()
+                    + ", amount: "
+                    + transactionDto.getAmount()
+            );
+        }
+
+        account.setBalance(balance - transactionDto.getAmount());
+        var transaction = buildTransaction(transactionDto, account);
+
+        accountRepository.save(account);
+        transactionRepository.save(transaction);
+    }
+
     private void saveNotEnoughMoneyTransaction(UUID payerAccountId,
                                                UUID payeeAccountId,
-                                               long amount
+                                               long amount,
+                                               TransactionType type
     ) {
         var transaction = TransactionEntity.builder()
                 .date(new Date())
                 .payerAccountId(payerAccountId)
                 .payeeAccountId(payeeAccountId)
                 .amount(amount)
-                .type(TransactionType.TRANSFER)
+                .type(type)
                 .state(TransactionState.REJECTED)
                 .code(TransactionCode.NOT_ENOUGH_MONEY)
                 .build();
 
         transactionRepository.save(transaction);
+    }
+
+    private TransactionEntity buildTransaction(UnidirectionalTransactionDto transactionDto,
+                                               AccountEntity account
+    ) {
+        return TransactionEntity.builder()
+                .date(new Date())
+                .payeeAccountId(account.getId())
+                .amount(transactionDto.getAmount())
+                .type(TransactionType.REPLENISHMENT)
+                .state(TransactionState.DONE)
+                .code(TransactionCode.SUCCESS)
+                .build();
     }
 
 }
