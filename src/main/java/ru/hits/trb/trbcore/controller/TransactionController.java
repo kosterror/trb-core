@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.hits.trb.trbcore.dto.account.UnidirectionalTransactionDto;
-import ru.hits.trb.trbcore.exception.NotEnoughMoney;
+import ru.hits.trb.trbcore.exception.NotEnoughMoneyException;
 import ru.hits.trb.trbcore.service.TransactionService;
 
 @Slf4j
@@ -32,7 +32,7 @@ public class TransactionController {
     @Operation(summary = "Вывести деньги")
     public void withdrawal(
             @Valid @RequestBody UnidirectionalTransactionDto unidirectionalTransactionDto
-    ) throws NotEnoughMoney {
+    ) throws NotEnoughMoneyException {
         transactionService.withdrawal(unidirectionalTransactionDto);
     }
 

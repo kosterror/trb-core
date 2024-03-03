@@ -11,7 +11,7 @@ import ru.hits.trb.trbcore.entity.enumeration.TransactionCode;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionState;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionType;
 import ru.hits.trb.trbcore.exception.BadRequestException;
-import ru.hits.trb.trbcore.exception.NotEnoughMoney;
+import ru.hits.trb.trbcore.exception.NotEnoughMoneyException;
 import ru.hits.trb.trbcore.repository.AccountRepository;
 import ru.hits.trb.trbcore.repository.TransactionRepository;
 import ru.hits.trb.trbcore.service.AccountService;
@@ -34,7 +34,7 @@ public class TransactionServiceImpl implements TransactionService {
     public void makeTransferTransaction(UUID payerAccountId,
                                         UUID payeeAccountId,
                                         long amount
-    ) throws NotEnoughMoney {
+    ) throws NotEnoughMoneyException {
         if (amount <= 0) {
             throw new BadRequestException("Invalid amount of transaction: " + amount);
         }
@@ -45,7 +45,7 @@ public class TransactionServiceImpl implements TransactionService {
         if (payerAccount.getBalance() < amount) {
             saveNotEnoughMoneyTransaction(payerAccountId, payeeAccountId, amount, TransactionType.TRANSFER);
             log.error("Saved rejected transaction");
-            throw new NotEnoughMoney("Not enough money for transfer. Payer: "
+            throw new NotEnoughMoneyException("Not enough money for transfer. Payer: "
                     + payeeAccountId
                     + ", payee: "
                     + payeeAccountId
@@ -88,7 +88,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Transactional
-    public void withdrawal(UnidirectionalTransactionDto transactionDto) throws NotEnoughMoney {
+    public void withdrawal(UnidirectionalTransactionDto transactionDto) throws NotEnoughMoneyException {
         var account = accountService.findAccount(transactionDto.getAccountId());
         var balance = account.getBalance();
 
@@ -99,7 +99,7 @@ public class TransactionServiceImpl implements TransactionService {
                     TransactionType.WITHDRAWAL
             );
             log.error("Not enough money for withdrawal. Saved rejected transaction");
-            throw new NotEnoughMoney("Not enough money for withdrawal. Account : "
+            throw new NotEnoughMoneyException("Not enough money for withdrawal. Account : "
                     + account.getId()
                     + ", amount: "
                     + transactionDto.getAmount()
