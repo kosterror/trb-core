@@ -2,15 +2,21 @@ package ru.hits.trb.trbcore.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.hits.trb.trbcore.dto.PaginationResponse;
 import ru.hits.trb.trbcore.dto.account.AccountDto;
 import ru.hits.trb.trbcore.dto.account.NewAccountDto;
+import ru.hits.trb.trbcore.dto.transaction.TransactionDto;
 import ru.hits.trb.trbcore.entity.AccountEntity;
 import ru.hits.trb.trbcore.entity.enumeration.AccountType;
 import ru.hits.trb.trbcore.exception.InvalidAccountTypeException;
 import ru.hits.trb.trbcore.exception.NotFoundException;
 import ru.hits.trb.trbcore.mapper.AccountMapper;
+import ru.hits.trb.trbcore.mapper.TransactionMapper;
 import ru.hits.trb.trbcore.repository.AccountRepository;
+import ru.hits.trb.trbcore.repository.TransactionRepository;
 import ru.hits.trb.trbcore.service.AccountService;
 
 import java.util.List;
@@ -21,8 +27,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
 
-    private final AccountMapper mapper;
-    private final AccountRepository repository;
+    private final AccountMapper accountMapper;
+    private final AccountRepository accountRepository;
+    private final TransactionRepository transactionRepository;
+    private final TransactionMapper transactionMapper;
 
     @Override
     public AccountDto createClientAccount(NewAccountDto dto) {
@@ -30,17 +38,17 @@ public class AccountServiceImpl implements AccountService {
             throw new InvalidAccountTypeException("It's impossible to create account with master type");
         }
 
-        var accountEntity = mapper.newDtoToEntity(dto);
-        accountEntity = repository.save(accountEntity);
+        var accountEntity = accountMapper.newDtoToEntity(dto);
+        accountEntity = accountRepository.save(accountEntity);
 
-        return mapper.entityToDto(accountEntity);
+        return accountMapper.entityToDto(accountEntity);
     }
 
     @Override
     public AccountDto getAccount(UUID id) {
         var account = findAccount(id);
 
-        return mapper.entityToDto(account);
+        return accountMapper.entityToDto(account);
     }
 
     @Override
@@ -48,23 +56,36 @@ public class AccountServiceImpl implements AccountService {
         var account = findAccount(id);
         account.setIsClosed(true);
 
-        repository.save(account);
+        accountRepository.save(account);
     }
 
     @Override
     public AccountEntity findAccount(UUID id) {
-        return repository
+        return accountRepository
                 .findByIdAndIsClosed(id, false)
                 .orElseThrow(() -> new NotFoundException("Account with id '" + id + "' not found"));
     }
 
     @Override
     public List<AccountDto> getUserAccounts(UUID id) {
-        return repository
+        return accountRepository
                 .findAllByExternalClientIdAndIsClosedOrderByCreationDate(id, false)
                 .stream()
-                .map(mapper::entityToDto)
+                .map(accountMapper::entityToDto)
                 .toList();
+    }
+
+    @Override
+    public PaginationResponse<TransactionDto> getHistory(UUID accountId, int pageNumber, int sizeNumber) {
+        var pageRequest = PageRequest.of(pageNumber, sizeNumber, Sort.Direction.ASC, "date");
+        var page = transactionRepository.findAll(pageRequest);
+        var transactions = page.stream().map(transactionMapper::entityToDto).toList();
+
+        return PaginationResponse.<TransactionDto>builder()
+                .pageNumber(page.getNumber())
+                .pageSize(page.getSize())
+                .elements(transactions)
+                .build();
     }
 
 }

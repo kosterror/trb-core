@@ -113,6 +113,41 @@ paths:
       responses:
         "200":
           description: OK
+  /api/v1/accounts/{accountId}/history:
+    get:
+      tags:
+        - API для счетов
+      summary: Получить историю по счету
+      operationId: getHistory
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          required: true
+          schema:
+            minimum: 0
+            type: integer
+            format: int32
+        - name: size
+          in: query
+          required: true
+          schema:
+            maximum: 200
+            minimum: 1
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PaginationResponseTransactionDto'
 components:
   schemas:
     UnidirectionalTransactionDto:
@@ -193,3 +228,75 @@ components:
         isClosed:
           type: boolean
           description: Признак закрытия счета
+    PaginationResponseTransactionDto:
+      required:
+        - elements
+        - pageNumber
+        - pageSize
+      type: object
+      properties:
+        pageNumber:
+          type: integer
+          description: Номер страницы
+          format: int32
+        pageSize:
+          type: integer
+          description: Размер страницы
+          format: int32
+        elements:
+          type: array
+          description: Элементы
+          items:
+            $ref: '#/components/schemas/TransactionDto'
+    TransactionDto:
+      required:
+        - amount
+        - code
+        - date
+        - id
+        - state
+        - type
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор транзакции
+          format: uuid
+        date:
+          type: string
+          description: Дата проведения транзакции
+          example: "1709372199882"
+        payerAccountId:
+          type: string
+          description: Отправитель
+          format: uuid
+        payeeAccountId:
+          type: string
+          description: Получатель
+          format: uuid
+        amount:
+          type: integer
+          description: Сумма
+          format: int64
+        type:
+          type: string
+          description: Тип транзакции
+          enum:
+            - TRANSFER
+            - REPLENISHMENT
+            - WITHDRAWAL
+            - LOAN_REPAYMENT
+            - LOAN_PAYMENT
+        state:
+          type: string
+          description: Состояние транзакции
+          enum:
+            - DONE
+            - REJECTED
+        code:
+          type: string
+          description: Код транзакции
+          enum:
+            - SUCCESS
+            - NOT_ENOUGH_MONEY
+      description: Элементы
