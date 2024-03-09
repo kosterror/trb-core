@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.hits.trb.trbcore.dto.transaction.InitTransactionDto;
+import ru.hits.trb.trbcore.dto.transaction.TransactionDto;
 import ru.hits.trb.trbcore.dto.transaction.UnidirectionalTransactionDto;
 import ru.hits.trb.trbcore.exception.NotEnoughMoneyException;
 import ru.hits.trb.trbcore.service.TransactionService;
@@ -34,6 +36,12 @@ public class TransactionController {
             @Valid @RequestBody UnidirectionalTransactionDto unidirectionalTransactionDto
     ) throws NotEnoughMoneyException {
         transactionService.withdrawal(unidirectionalTransactionDto);
+    }
+
+    @PostMapping("/account-to-account")
+    @Operation(summary = "Сделать перевод между счетами")
+    public TransactionDto accountTransaction(@Valid @RequestBody InitTransactionDto initTransactionDto) {
+        return transactionService.makeTransferTransaction(initTransactionDto);
     }
 
 }

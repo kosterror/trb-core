@@ -4,14 +4,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.hits.trb.trbcore.dto.transaction.InitTransactionDto;
+import ru.hits.trb.trbcore.dto.transaction.TransactionDto;
 import ru.hits.trb.trbcore.dto.transaction.UnidirectionalTransactionDto;
 import ru.hits.trb.trbcore.entity.TransactionEntity;
 import ru.hits.trb.trbcore.entity.enumeration.AccountType;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionCode;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionState;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionType;
-import ru.hits.trb.trbcore.exception.BadRequestException;
 import ru.hits.trb.trbcore.exception.NotEnoughMoneyException;
+import ru.hits.trb.trbcore.mapper.TransactionMapper;
 import ru.hits.trb.trbcore.repository.AccountRepository;
 import ru.hits.trb.trbcore.repository.TransactionRepository;
 import ru.hits.trb.trbcore.service.AccountService;
@@ -28,48 +30,47 @@ public class TransactionServiceImpl implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final AccountRepository accountRepository;
     private final AccountService accountService;
+    private final TransactionMapper transactionMapper;
 
     @Override
     @Transactional
-    public void makeTransferTransaction(UUID payerAccountId,
-                                        UUID payeeAccountId,
-                                        long amount
-    ) throws NotEnoughMoneyException {
-        if (amount <= 0) {
-            throw new BadRequestException("Invalid amount of transaction: " + amount);
-        }
+    public TransactionDto makeTransferTransaction(InitTransactionDto initTransactionDto) {
+        var payerAccount = accountService.findAccount(initTransactionDto.getPayerAccountId());
+        var payeeAccount = accountService.findAccount(initTransactionDto.getPayeeAccountId());
 
-        var payerAccount = accountService.findAccount(payerAccountId);
-        var payeeAccount = accountService.findAccount(payeeAccountId);
-
-        if (payerAccount.getBalance() < amount) {
-            saveNotEnoughMoneyTransaction(payerAccountId, payeeAccountId, amount, TransactionType.TRANSFER);
+        if (payerAccount.getBalance() < initTransactionDto.getAmount()) {
+            var transaction = saveNotEnoughMoneyTransaction(payerAccount.getId(),
+                    payeeAccount.getId(),
+                    initTransactionDto.getAmount(),
+                    TransactionType.TRANSFER
+            );
             log.error("Saved rejected transaction");
-            throw new NotEnoughMoneyException("Not enough money for transfer. Payer: "
-                    + payeeAccountId
-                    + ", payee: "
-                    + payeeAccountId
-                    + ", amount: "
-                    + amount);
+
+            return transactionMapper.entityToDto(transaction);
         }
 
         var transaction = TransactionEntity.builder()
                 .date(new Date())
-                .payerAccountId(payerAccountId)
-                .payeeAccountId(payeeAccountId)
-                .amount(amount)
+                .payerAccountId(payerAccount.getId())
+                .payeeAccountId(payeeAccount.getId())
+                .amount(initTransactionDto.getAmount())
                 .type(TransactionType.TRANSFER)
                 .state(TransactionState.DONE)
                 .code(TransactionCode.SUCCESS)
                 .build();
 
-        payerAccount.setBalance(payerAccount.getBalance() - amount);
-        payeeAccount.setBalance(payeeAccount.getBalance() + amount);
+        payerAccount.setBalance(payerAccount.getBalance() - initTransactionDto.getAmount());
+        payeeAccount.setBalance(payeeAccount.getBalance() + initTransactionDto.getAmount());
 
         accountRepository.save(payeeAccount);
         accountRepository.save(payerAccount);
-        transactionRepository.save(transaction);
-        log.info("Transfer transaction from {} to {} was completed successfully", payerAccountId, payeeAccount);
+        transaction = transactionRepository.save(transaction);
+        log.info("Transfer transaction from {} to {} was completed successfully",
+                payerAccount.getId(),
+                payeeAccount.getId()
+        );
+
+        return transactionMapper.entityToDto(transaction);
     }
 
     @Override
