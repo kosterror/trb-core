@@ -8,3 +8,5 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  kafka:
+    bootstrap-servers: localhost:9000,localhost:9001

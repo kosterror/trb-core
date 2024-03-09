@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.hits.trb.trbcore.dto.account.UnidirectionalTransactionDto;
+import ru.hits.trb.trbcore.dto.transaction.UnidirectionalTransactionDto;
 import ru.hits.trb.trbcore.exception.NotEnoughMoneyException;
 import ru.hits.trb.trbcore.service.TransactionService;
 

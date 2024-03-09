@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.hits.trb.trbcore.dto.account.UnidirectionalTransactionDto;
-import ru.hits.trb.trbcore.entity.AccountEntity;
+import ru.hits.trb.trbcore.dto.transaction.UnidirectionalTransactionDto;
 import ru.hits.trb.trbcore.entity.TransactionEntity;
+import ru.hits.trb.trbcore.entity.enumeration.AccountType;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionCode;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionState;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionType;
@@ -77,7 +77,7 @@ public class TransactionServiceImpl implements TransactionService {
     public void replenishment(UnidirectionalTransactionDto transactionDto) {
         var account = accountService.findAccount(transactionDto.getAccountId());
 
-        var transaction = buildTransaction(transactionDto, account);
+        var transaction = buildTransaction(transactionDto, null, account.getId(), TransactionType.REPLENISHMENT);
 
         account.setBalance(account.getBalance() + transactionDto.getAmount());
 
@@ -107,16 +107,61 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         account.setBalance(balance - transactionDto.getAmount());
-        var transaction = buildTransaction(transactionDto, account);
+        var transaction = buildTransaction(transactionDto, account.getId(), null, TransactionType.REPLENISHMENT);
 
         accountRepository.save(account);
         transactionRepository.save(transaction);
     }
 
-    private void saveNotEnoughMoneyTransaction(UUID payerAccountId,
-                                               UUID payeeAccountId,
-                                               long amount,
-                                               TransactionType type
+    @Override
+    public TransactionEntity repayment(UnidirectionalTransactionDto transactionDto) {
+        var loanAccount = accountService.findAccount(transactionDto.getAccountId());
+        var masterAccountOptional = accountRepository.findByType(AccountType.MASTER);
+
+        if (masterAccountOptional.isEmpty()) {
+            var rejectedTransaction = buildTransaction(transactionDto,
+                    loanAccount.getId(),
+                    null,
+                    TransactionType.LOAN_REPAYMENT
+            );
+
+            rejectedTransaction = transactionRepository.save(rejectedTransaction);
+
+            log.info("Master account not found. Saved rejected transaction");
+
+            return rejectedTransaction;
+        }
+
+        var masterAccount = masterAccountOptional.get();
+
+        if (loanAccount.getBalance() < transactionDto.getAmount()) {
+            var rejectedTransaction = saveNotEnoughMoneyTransaction(loanAccount.getId(),
+                    masterAccount.getId(),
+                    transactionDto.getAmount(),
+                    TransactionType.LOAN_REPAYMENT
+            );
+
+            log.error("Not enough money for repayment. Saved rejected transaction");
+
+            return rejectedTransaction;
+        }
+
+        loanAccount.setBalance(loanAccount.getBalance() - transactionDto.getAmount());
+        var transaction = buildTransaction(transactionDto,
+                loanAccount.getId(),
+                masterAccount.getId(),
+                TransactionType.LOAN_REPAYMENT
+        );
+
+        accountRepository.save(loanAccount);
+        accountRepository.save(masterAccount);
+        return transactionRepository.save(transaction);
+    }
+
+    private TransactionEntity saveNotEnoughMoneyTransaction(UUID payerAccountId,
+                                                            UUID payeeAccountId,
+                                                            long amount,
+                                                            TransactionType type
     ) {
         var transaction = TransactionEntity.builder()
                 .date(new Date())
@@ -128,17 +173,20 @@ public class TransactionServiceImpl implements TransactionService {
                 .code(TransactionCode.NOT_ENOUGH_MONEY)
                 .build();
 
-        transactionRepository.save(transaction);
+        return transactionRepository.save(transaction);
     }
 
     private TransactionEntity buildTransaction(UnidirectionalTransactionDto transactionDto,
-                                               AccountEntity account
+                                               UUID payerAccountId,
+                                               UUID payeeAccountId,
+                                               TransactionType type
     ) {
         return TransactionEntity.builder()
                 .date(new Date())
-                .payeeAccountId(account.getId())
+                .payerAccountId(payerAccountId)
+                .payeeAccountId(payeeAccountId)
                 .amount(transactionDto.getAmount())
-                .type(TransactionType.REPLENISHMENT)
+                .type(type)
                 .state(TransactionState.DONE)
                 .code(TransactionCode.SUCCESS)
                 .build();

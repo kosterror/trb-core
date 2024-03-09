@@ -13,6 +13,18 @@ spring:
     show-sql: false
   flyway:
     locations: migrations
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVERS}
+    producer:
+      client-id: ${spring.application.name}
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      retries: 3
+    consumer:
+      client-id: ${spring.application.name}
+      group-id: ${spring.application.name}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
 logging:
   level:
     org:
@@ -24,3 +36,9 @@ logging:
                 web:
                   filter:
                     CommonsRequestLoggingFilter: DEBUG
+
+kafka:
+  topic:
+    loan-repayment: "transaction.loan-repayment"
+    loan-payment: "transaction.loan-payment"
+    loan-repayment-callback: "transaction.loan-repayment-callback"

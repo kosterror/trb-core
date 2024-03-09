@@ -1,4 +1,4 @@
-package ru.hits.trb.trbcore.dto.account;
+package ru.hits.trb.trbcore.dto.transaction;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
