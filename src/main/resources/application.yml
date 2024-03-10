@@ -42,3 +42,4 @@ kafka:
     loan-repayment: "transaction.loan-repayment"
     loan-payment: "transaction.loan-payment"
     loan-repayment-callback: "transaction.loan-repayment-callback"
+    loan-payment-callback: "transaction.loan-payment-callback"

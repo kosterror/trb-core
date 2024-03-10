@@ -148,10 +148,45 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         loanAccount.setBalance(loanAccount.getBalance() - transactionDto.getAmount());
+        masterAccount.setBalance(masterAccount.getBalance() + transactionDto.getAmount());
         var transaction = buildTransaction(transactionDto,
                 loanAccount.getId(),
                 masterAccount.getId(),
                 TransactionType.LOAN_REPAYMENT
+        );
+
+        accountRepository.save(loanAccount);
+        accountRepository.save(masterAccount);
+        return transactionRepository.save(transaction);
+    }
+
+    @Override
+    public TransactionEntity payment(UnidirectionalTransactionDto transactionDto) {
+        var loanAccount = accountService.findAccount(transactionDto.getAccountId());
+        var masterAccountOptional = accountRepository.findByType(AccountType.MASTER);
+
+        if (masterAccountOptional.isEmpty()) {
+            var rejectedTransaction = buildTransaction(transactionDto,
+                    null,
+                    loanAccount.getId(),
+                    TransactionType.LOAN_PAYMENT
+            );
+
+            rejectedTransaction = transactionRepository.save(rejectedTransaction);
+
+            log.info("Master account not found. Saved rejected transaction");
+
+            return rejectedTransaction;
+        }
+
+        var masterAccount = masterAccountOptional.get();
+
+        loanAccount.setBalance(loanAccount.getBalance() + transactionDto.getAmount());
+        masterAccount.setBalance(masterAccount.getBalance() - transactionDto.getAmount());
+        var transaction = buildTransaction(transactionDto,
+                masterAccount.getId(),
+                loanAccount.getId(),
+                TransactionType.LOAN_PAYMENT
         );
 
         accountRepository.save(loanAccount);

@@ -8,4 +8,5 @@ public interface LoanTransactionService {
 
     void makeRepaymentTransaction(UUID loanRepaymentId, UnidirectionalTransactionDto unidirectionalTransactionDto);
 
+    void makePaymentTransaction(UUID loanPaymentId, UnidirectionalTransactionDto unidirectionalTransactionDto);
 }

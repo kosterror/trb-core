@@ -15,4 +15,6 @@ public interface TransactionService {
     void withdrawal(UnidirectionalTransactionDto unidirectionalTransactionDto) throws NotEnoughMoneyException;
 
     TransactionEntity repayment(UnidirectionalTransactionDto unidirectionalTransactionDto);
+
+    TransactionEntity payment(UnidirectionalTransactionDto unidirectionalTransactionDto);
 }
