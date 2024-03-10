@@ -78,7 +78,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public PaginationResponse<TransactionDto> getHistory(UUID accountId, int pageNumber, int sizeNumber) {
         var pageRequest = PageRequest.of(pageNumber, sizeNumber, Sort.Direction.ASC, "date");
-        var page = transactionRepository.findAll(pageRequest);
+        var page = transactionRepository.findAllByPayeeAccountIdOrPayerAccountId(pageRequest, accountId, accountId);
         var transactions = page.stream().map(transactionMapper::entityToDto).toList();
 
         return PaginationResponse.<TransactionDto>builder()
