@@ -63,7 +63,14 @@ public class AccountServiceImpl implements AccountService {
     public AccountEntity findAccount(UUID id) {
         return accountRepository
                 .findByIdAndIsClosed(id, false)
-                .orElseThrow(() -> new NotFoundException("Account with id '" + id + "' not found"));
+                .orElseThrow(() -> new NotFoundException(STR."Account with id '\{id}' not found"));
+    }
+
+    @Override
+    public AccountEntity findMasterAccountWithAmount(long amount) {
+        return accountRepository
+                .findByTypeAndBalanceGreaterThanEqual(AccountType.MASTER, amount)
+                .orElseThrow(() -> new NotFoundException(STR."Master account with amount \{amount} was not found"));
     }
 
     @Override

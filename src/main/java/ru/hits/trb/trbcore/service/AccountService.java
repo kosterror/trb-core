@@ -19,6 +19,8 @@ public interface AccountService {
 
     AccountEntity findAccount(UUID id);
 
+    AccountEntity findMasterAccountWithAmount(long amount);
+
     List<AccountDto> getUserAccounts(UUID id);
 
     PaginationResponse<TransactionDto> getHistory(UUID accountId, int page, int size);

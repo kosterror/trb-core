@@ -39,7 +39,9 @@ logging:
 
 kafka:
   topic:
-    loan-repayment: "transaction.loan-repayment"
-    loan-payment: "transaction.loan-payment"
-    loan-repayment-callback: "transaction.loan-repayment-callback"
-    loan-payment-callback: "transaction.loan-payment-callback"
+    consumer:
+      transaction-initialization: "transaction.initialization"
+    producer:
+      transaction-callback: "transaction.callback"
+      loan-payment-callback: "transaction.loan.payment-callback"
+      loan-repayment-callback: "transaction.loan.repayment-callback"

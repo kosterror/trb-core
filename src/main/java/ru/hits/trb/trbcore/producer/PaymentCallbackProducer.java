@@ -20,7 +20,7 @@ public class PaymentCallbackProducer {
     private final KafkaTemplate<Object, Object> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
-    @Value("${kafka.topic.loan-payment-callback}")
+    @Value("${kafka.topic.producer.loan-payment-callback}")
     private String topic;
 
     public void sendMessage(UUID loanPaymentId, TransactionState transactionState) {

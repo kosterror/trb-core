@@ -9,34 +9,36 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
-import ru.hits.trb.trbcore.dto.transaction.UnidirectionalTransactionDto;
+import ru.hits.trb.trbcore.dto.transaction.InitTransactionDto;
 import ru.hits.trb.trbcore.exception.MessageDeserializationException;
-import ru.hits.trb.trbcore.service.LoanTransactionService;
+import ru.hits.trb.trbcore.service.TransactionServiceWrapper;
 
 import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PaymentConsumer {
+public class TransactionConsumer {
 
-    private static final String TOPIC = "${kafka.topic.loan-payment}";
+    private static final String TOPIC = "${kafka.topic.consumer.transaction-initialization}";
     private static final String GROUP_ID = "${spring.kafka.consumer.group-id}";
 
     private final ObjectMapper mapper;
-    private final LoanTransactionService loanTransactionService;
+    private final TransactionServiceWrapper service;
 
     @KafkaListener(topics = TOPIC, groupId = GROUP_ID)
-    public void transactionLoanRepayment(@Header(KafkaHeaders.RECEIVED_KEY) String key,
-                                         @Payload String message) {
+    public void makeTransaction(@Header(KafkaHeaders.RECEIVED_KEY) String key,
+                                @Payload String message) {
         try {
-            var transactionDto = mapper.readValue(message, UnidirectionalTransactionDto.class);
-            var loanPaymentId = mapper.readValue(key, UUID.class);
+            var initTransaction = mapper.readValue(message, InitTransactionDto.class);
+            var externalTransactionId = mapper.readValue(key, UUID.class);
 
-            loanTransactionService.makePaymentTransaction(loanPaymentId, transactionDto);
-            log.info("Loan payment finished successfully");
+            service.process(externalTransactionId, initTransaction);
+            log.info("Transaction finished success");
         } catch (JsonProcessingException exception) {
-            throw new MessageDeserializationException("Failed to deserialize message: " + message, exception);
+            throw new MessageDeserializationException(STR."Failed to deserialize key \{key} or message: \{message}",
+                    exception
+            );
         }
     }
 

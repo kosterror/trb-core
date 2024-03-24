@@ -2,19 +2,15 @@ package ru.hits.trb.trbcore.service;
 
 import ru.hits.trb.trbcore.dto.transaction.InitTransactionDto;
 import ru.hits.trb.trbcore.dto.transaction.TransactionDto;
-import ru.hits.trb.trbcore.dto.transaction.UnidirectionalTransactionDto;
-import ru.hits.trb.trbcore.entity.TransactionEntity;
-import ru.hits.trb.trbcore.exception.NotEnoughMoneyException;
+
+import java.util.UUID;
 
 public interface TransactionService {
 
-    TransactionDto makeTransferTransaction(InitTransactionDto initTransactionDto);
+    TransactionDto process(UUID externalTransactionId, InitTransactionDto transactionDto);
 
-    void replenishment(UnidirectionalTransactionDto unidirectionalTransactionDto);
+    void onSuccess(TransactionDto transaction);
 
-    void withdrawal(UnidirectionalTransactionDto unidirectionalTransactionDto) throws NotEnoughMoneyException;
+    void onFailed(UUID externalTransactionId);
 
-    TransactionEntity repayment(UnidirectionalTransactionDto unidirectionalTransactionDto);
-
-    TransactionEntity payment(UnidirectionalTransactionDto unidirectionalTransactionDto);
 }

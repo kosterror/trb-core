@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import ru.hits.trb.trbcore.entity.enumeration.TransactionState;
+import ru.hits.trb.trbcore.dto.transaction.TransactionCallbackDto;
 import ru.hits.trb.trbcore.exception.InternalServiceException;
 
 import java.util.UUID;
@@ -15,22 +15,22 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class RepaymentCallbackProducer {
+public class TransactionCallbackProducer {
 
     private final KafkaTemplate<Object, Object> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
-    @Value("${kafka.topic.producer.loan-repayment-callback}")
+    @Value("${kafka.topic.producer.transaction-callback}")
     private String topic;
 
-    public void sendMessage(UUID loanRepaymentId, TransactionState transactionState) {
+    public void sendMessage(UUID externalTransactionId, TransactionCallbackDto transactionCallback) {
         try {
-            var key = objectMapper.writeValueAsString(loanRepaymentId);
-            var value = objectMapper.writeValueAsString(transactionState);
+            var key = objectMapper.writeValueAsString(externalTransactionId);
+            var value = objectMapper.writeValueAsString(transactionCallback);
 
             kafkaTemplate.send(topic, key, value);
 
-            log.info("Repayment callback record sent, id: {}, transaction state {}", key, value);
+            log.info("Transaction callback record sent, key: {}, value {}", key, value);
         } catch (JsonProcessingException exception) {
             throw new InternalServiceException("Failed to serialize data for kafka record", exception);
         }

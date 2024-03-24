@@ -11,6 +11,10 @@ java {
     sourceCompatibility = "21"
 }
 
+compileJava {
+    options.compilerArgs += ["--enable-preview"]
+}
+
 repositories {
     mavenCentral()
 }

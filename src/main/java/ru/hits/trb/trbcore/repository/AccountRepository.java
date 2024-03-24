@@ -18,6 +18,6 @@ public interface AccountRepository extends JpaRepository<AccountEntity, UUID> {
                                                                                 boolean isClosed
     );
 
-    Optional<AccountEntity> findByType(AccountType type);
+    Optional<AccountEntity> findByTypeAndBalanceGreaterThanEqual(AccountType type, long balance);
 
 }
