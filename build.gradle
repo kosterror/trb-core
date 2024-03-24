@@ -9,6 +9,7 @@ version = "0.0.1"
 
 java {
     sourceCompatibility = "21"
+    targetCompatibility = "21"
 }
 
 compileJava {
