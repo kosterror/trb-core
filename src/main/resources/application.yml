@@ -45,3 +45,6 @@ kafka:
       transaction-callback: "transaction.callback"
       loan-payment-callback: "transaction.loan.payment-callback"
       loan-repayment-callback: "transaction.loan.repayment-callback"
+
+urls:
+  exchange-rate: https://api.coingate.com
