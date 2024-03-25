@@ -8,4 +8,6 @@ public interface ExchangeRateService {
 
     BigDecimal getExchangeRate(Currency from, Currency to);
 
+    BigDecimal getAmount(BigDecimal amount, Currency from, Currency to);
+
 }

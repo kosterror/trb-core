@@ -7,6 +7,7 @@ import ru.hits.trb.trbcore.entity.enumeration.Currency;
 import ru.hits.trb.trbcore.service.ExchangeRateService;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +18,12 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     @Override
     public BigDecimal getExchangeRate(Currency from, Currency to) {
         return exchangeRateClient.getExchangeRate(from, to);
+    }
+
+    @Override
+    public BigDecimal getAmount(BigDecimal amount, Currency from, Currency to) {
+        var exchangeRate = getExchangeRate(from, to);
+        return amount.multiply(exchangeRate).setScale(2, RoundingMode.DOWN);
     }
 
 }

@@ -13,6 +13,7 @@ import ru.hits.trb.trbcore.producer.RepaymentCallbackProducer;
 import ru.hits.trb.trbcore.repository.AccountRepository;
 import ru.hits.trb.trbcore.repository.TransactionRepository;
 import ru.hits.trb.trbcore.service.AccountService;
+import ru.hits.trb.trbcore.service.ExchangeRateService;
 import ru.hits.trb.trbcore.service.TransactionService;
 
 import java.util.Date;
@@ -28,11 +29,15 @@ public class LoanRepaymentTransactionService implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final TransactionMapper transactionMapper;
     private final RepaymentCallbackProducer repaymentCallbackProducer;
+    private final ExchangeRateService exchangeRateService;
 
     @Override
     public TransactionDto process(UUID externalTransactionId, InitTransactionDto initTransaction) {
         var payerAccount = accountService.findAccount(initTransaction.getPayeeAccountId());
-        var masterAccount = accountService.findMasterAccountWithAmount(initTransaction.getAmount());
+        var masterAccount = accountService.findMasterAccountWithAmount(
+                initTransaction.getAmount(),
+                initTransaction.getCurrency()
+        );
 
         var transaction = TransactionEntity.builder()
                 .externalId(externalTransactionId)
@@ -40,11 +45,21 @@ public class LoanRepaymentTransactionService implements TransactionService {
                 .payerAccountId(payerAccount.getId())
                 .payeeAccountId(masterAccount.getId())
                 .amount(initTransaction.getAmount())
+                .currency(initTransaction.getCurrency())
                 .type(TransactionType.LOAN_REPAYMENT)
                 .build();
 
-        payerAccount.setBalance(payerAccount.getBalance() - initTransaction.getAmount());
-        masterAccount.setBalance(masterAccount.getBalance() + initTransaction.getAmount());
+        var payerAmount = exchangeRateService.getAmount(initTransaction.getAmount(),
+                initTransaction.getCurrency(),
+                payerAccount.getCurrency()
+        );
+        var payeeAmount = exchangeRateService.getAmount(initTransaction.getAmount(),
+                initTransaction.getCurrency(),
+                masterAccount.getCurrency()
+        );
+
+        payerAccount.setBalance(payerAccount.getBalance().subtract(payerAmount));
+        masterAccount.setBalance(masterAccount.getBalance().add(payeeAmount));
 
         accountRepository.save(payerAccount);
         accountRepository.save(masterAccount);

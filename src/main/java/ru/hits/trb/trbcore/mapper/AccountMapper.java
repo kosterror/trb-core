@@ -14,7 +14,7 @@ import ru.hits.trb.trbcore.entity.AccountEntity;
 )
 public interface AccountMapper {
 
-    @Mapping(target = "balance", expression = "java(0L)")
+    @Mapping(target = "balance", expression = "java(java.math.BigDecimal.ZERO)")
     @Mapping(target = "creationDate", expression = "java(new java.util.Date())")
     @Mapping(target = "isClosed", expression = "java(false)")
     AccountEntity newDtoToEntity(NewAccountDto dto);

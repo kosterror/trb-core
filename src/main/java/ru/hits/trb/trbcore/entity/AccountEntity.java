@@ -6,7 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.hits.trb.trbcore.entity.enumeration.AccountType;
+import ru.hits.trb.trbcore.entity.enumeration.Currency;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
 
@@ -25,7 +27,10 @@ public class AccountEntity {
     @Enumerated(EnumType.STRING)
     private AccountType type;
 
-    private long balance;
+    private BigDecimal balance;
+
+    @Enumerated(EnumType.STRING)
+    private Currency currency;
 
     private String clientFullName;
 

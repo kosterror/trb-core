@@ -16,6 +16,7 @@ import ru.hits.trb.trbcore.producer.TransactionCallbackProducer;
 import ru.hits.trb.trbcore.repository.AccountRepository;
 import ru.hits.trb.trbcore.repository.TransactionRepository;
 import ru.hits.trb.trbcore.service.AccountService;
+import ru.hits.trb.trbcore.service.ExchangeRateService;
 import ru.hits.trb.trbcore.service.TransactionService;
 
 import java.util.Date;
@@ -31,6 +32,7 @@ public class TransferTransactionService implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final TransactionMapper transactionMapper;
     private final TransactionCallbackProducer transactionCallbackProducer;
+    private final ExchangeRateService exchangeRateService;
 
     @Override
     @Transactional
@@ -38,9 +40,18 @@ public class TransferTransactionService implements TransactionService {
         var payeeAccount = accountService.findAccount(initTransaction.getPayeeAccountId());
         var payerAccount = accountService.findAccount(initTransaction.getPayerAccountId());
 
-        if (payerAccount.getBalance() < initTransaction.getAmount()) {
+        var payeeAmount = exchangeRateService.getAmount(initTransaction.getAmount(),
+                initTransaction.getCurrency(),
+                payeeAccount.getCurrency()
+        );
+        var payerAmount = exchangeRateService.getAmount(initTransaction.getAmount(),
+                initTransaction.getCurrency(),
+                payerAccount.getCurrency()
+        );
+
+        if (payerAccount.getBalance().compareTo(payerAmount) <= 0) {
             throw new NotEnoughMoneyException(
-                    StringTemplate.STR."Account \{payerAccount.getId()} has only \{payerAccount.getBalance()} but it needs \{initTransaction.getAmount()}"
+                    StringTemplate.STR."Account \{payerAccount.getId()} has only \{payerAccount.getBalance()} but it needs \{payerAmount} in currency \{payerAccount.getCurrency()}"
             );
         }
 
@@ -50,11 +61,12 @@ public class TransferTransactionService implements TransactionService {
                 .payerAccountId(payerAccount.getId())
                 .payeeAccountId(payeeAccount.getId())
                 .amount(initTransaction.getAmount())
+                .currency(initTransaction.getCurrency())
                 .type(TransactionType.TRANSFER)
                 .build();
 
-        payerAccount.setBalance(payerAccount.getBalance() - initTransaction.getAmount());
-        payeeAccount.setBalance(payeeAccount.getBalance() + initTransaction.getAmount());
+        payerAccount.setBalance(payerAccount.getBalance().subtract(payerAmount));
+        payeeAccount.setBalance(payeeAccount.getBalance().add(payeeAmount));
 
         accountRepository.save(payerAccount);
         accountRepository.save(payeeAccount);

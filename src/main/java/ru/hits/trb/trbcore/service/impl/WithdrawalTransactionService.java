@@ -16,6 +16,7 @@ import ru.hits.trb.trbcore.producer.TransactionCallbackProducer;
 import ru.hits.trb.trbcore.repository.AccountRepository;
 import ru.hits.trb.trbcore.repository.TransactionRepository;
 import ru.hits.trb.trbcore.service.AccountService;
+import ru.hits.trb.trbcore.service.ExchangeRateService;
 import ru.hits.trb.trbcore.service.TransactionService;
 
 import java.util.Date;
@@ -31,16 +32,21 @@ public class WithdrawalTransactionService implements TransactionService {
     private final AccountService accountService;
     private final TransactionMapper transactionMapper;
     private final TransactionCallbackProducer transactionCallbackProducer;
+    private final ExchangeRateService exchangeRateService;
 
     @Override
     @Transactional
     public TransactionDto process(UUID externalTransactionId, InitTransactionDto initTransaction) {
         var account = accountService.findAccount(initTransaction.getPayerAccountId());
         var balance = account.getBalance();
+        var convertedAmount = exchangeRateService.getAmount(initTransaction.getAmount(),
+                initTransaction.getCurrency(),
+                account.getCurrency()
+        );
 
-        if (balance < initTransaction.getAmount()) {
+        if (balance.compareTo(convertedAmount) <= 0) {
             throw new NotEnoughMoneyException(
-                    StringTemplate.STR."Account \{account.getId()} has only \{account.getBalance()} but it needs \{initTransaction.getAmount()}"
+                    StringTemplate.STR."Account \{account.getId()} has only \{account.getBalance()} but it needs \{convertedAmount} in currency \{account.getCurrency()}"
             );
         }
 
@@ -49,17 +55,19 @@ public class WithdrawalTransactionService implements TransactionService {
                 .date(new Date())
                 .payerAccountId(account.getId())
                 .amount(initTransaction.getAmount())
+                .currency(initTransaction.getCurrency())
                 .type(TransactionType.WITHDRAWAL)
                 .build();
 
-        account.setBalance(balance - transaction.getAmount());
+        account.setBalance(balance.subtract(convertedAmount));
 
         accountRepository.save(account);
         transaction = transactionRepository.save(transaction);
 
-        log.info("Withdrawal transaction from {} with amount {} was completed successfully",
+        log.info("Withdrawal transaction from {} with amount {} in currency {} was completed successfully",
                 account.getId(),
-                transaction.getAmount()
+                transaction.getAmount(),
+                transaction.getCurrency()
         );
 
         return transactionMapper.entityToDto(transaction);

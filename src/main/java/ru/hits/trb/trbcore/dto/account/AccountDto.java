@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import ru.hits.trb.trbcore.entity.enumeration.AccountType;
+import ru.hits.trb.trbcore.entity.enumeration.Currency;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
 
@@ -21,7 +23,10 @@ public class AccountDto {
     private AccountType type;
 
     @Schema(description = "Баланс счета", requiredMode = REQUIRED)
-    private long balance;
+    private BigDecimal balance;
+
+    @Schema(description = "Валюта счета", requiredMode = REQUIRED)
+    private Currency currency;
 
     @Schema(description = "ФИО владельца счета", requiredMode = REQUIRED)
     private String clientFullName;

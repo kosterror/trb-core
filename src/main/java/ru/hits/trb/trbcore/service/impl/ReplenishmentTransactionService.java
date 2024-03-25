@@ -14,6 +14,7 @@ import ru.hits.trb.trbcore.producer.TransactionCallbackProducer;
 import ru.hits.trb.trbcore.repository.AccountRepository;
 import ru.hits.trb.trbcore.repository.TransactionRepository;
 import ru.hits.trb.trbcore.service.AccountService;
+import ru.hits.trb.trbcore.service.ExchangeRateService;
 import ru.hits.trb.trbcore.service.TransactionService;
 
 import java.util.Date;
@@ -29,6 +30,8 @@ public class ReplenishmentTransactionService implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final TransactionMapper transactionMapper;
     private final TransactionCallbackProducer transactionCallbackProducer;
+    private final ExchangeRateService exchangeRateService;
+
 
     @Override
     public TransactionDto process(UUID externalTransactionId, InitTransactionDto initTransaction) {
@@ -40,17 +43,24 @@ public class ReplenishmentTransactionService implements TransactionService {
                 .date(new Date())
                 .payeeAccountId(account.getId())
                 .amount(initTransaction.getAmount())
+                .currency(initTransaction.getCurrency())
                 .type(TransactionType.REPLENISHMENT)
                 .build();
 
-        account.setBalance(balance + transaction.getAmount());
+        var payeeAmount = exchangeRateService.getAmount(initTransaction.getAmount(),
+                initTransaction.getCurrency(),
+                account.getCurrency()
+        );
+
+        account.setBalance(balance.add(payeeAmount));
 
         accountRepository.save(account);
         transaction = transactionRepository.save(transaction);
 
-        log.info("Replenishment transaction from {} with amount {} was completed successfully",
+        log.info("Replenishment transaction from {} with amount {} and currency {} was completed successfully",
                 account.getId(),
-                transaction.getAmount()
+                transaction.getAmount(),
+                transaction.getCurrency()
         );
 
         return transactionMapper.entityToDto(transaction);

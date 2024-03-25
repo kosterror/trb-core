@@ -5,7 +5,9 @@ import ru.hits.trb.trbcore.dto.account.AccountDto;
 import ru.hits.trb.trbcore.dto.account.NewAccountDto;
 import ru.hits.trb.trbcore.dto.transaction.TransactionDto;
 import ru.hits.trb.trbcore.entity.AccountEntity;
+import ru.hits.trb.trbcore.entity.enumeration.Currency;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,7 +21,7 @@ public interface AccountService {
 
     AccountEntity findAccount(UUID id);
 
-    AccountEntity findMasterAccountWithAmount(long amount);
+    AccountEntity findMasterAccountWithAmount(BigDecimal amount, Currency currency);
 
     List<AccountDto> getUserAccounts(UUID id);
 

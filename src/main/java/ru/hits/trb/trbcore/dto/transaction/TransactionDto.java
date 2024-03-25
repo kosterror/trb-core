@@ -3,8 +3,10 @@ package ru.hits.trb.trbcore.dto.transaction;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import ru.hits.trb.trbcore.entity.enumeration.Currency;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionType;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
 
@@ -36,7 +38,10 @@ public class TransactionDto {
     private UUID payeeAccountId;
 
     @Schema(description = "Сумма", requiredMode = REQUIRED)
-    private long amount;
+    private BigDecimal amount;
+
+    @Schema(description = "Валюта", requiredMode = REQUIRED)
+    private Currency currency;
 
     @Schema(description = "Тип транзакции", requiredMode = REQUIRED)
     private TransactionType type;

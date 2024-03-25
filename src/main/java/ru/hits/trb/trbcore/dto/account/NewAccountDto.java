@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import ru.hits.trb.trbcore.entity.enumeration.AccountType;
+import ru.hits.trb.trbcore.entity.enumeration.Currency;
 
 import java.util.UUID;
 
@@ -14,6 +15,10 @@ public class NewAccountDto {
     @Schema(description = "Тип счета", example = "DEPOSIT")
     @NotNull
     private AccountType type;
+
+    @Schema(description = "Валюта счета", example = "RUB")
+    @NotNull
+    private Currency currency;
 
     @Schema(description = "ФИО владельца счета", example = "Иванов Иван Иванович")
     @NotBlank
