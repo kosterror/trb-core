@@ -22,11 +22,6 @@ public class AccountDto {
     @Schema(description = "Тип банковского счета", requiredMode = REQUIRED)
     private AccountType type;
 
-    @Schema(description = "Идентификатор кредита, возвращается только, если type = LOAN",
-            requiredMode = NOT_REQUIRED
-    )
-    private UUID loanId;
-
     @Schema(description = "Баланс счета", requiredMode = REQUIRED)
     private BigDecimal balance;
 

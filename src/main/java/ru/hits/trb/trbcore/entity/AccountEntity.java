@@ -27,8 +27,6 @@ public class AccountEntity {
     @Enumerated(EnumType.STRING)
     private AccountType type;
 
-    private UUID loanId;
-
     private BigDecimal balance;
 
     @Enumerated(EnumType.STRING)

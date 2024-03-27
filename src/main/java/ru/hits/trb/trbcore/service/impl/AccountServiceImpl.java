@@ -12,7 +12,6 @@ import ru.hits.trb.trbcore.dto.transaction.TransactionDto;
 import ru.hits.trb.trbcore.entity.AccountEntity;
 import ru.hits.trb.trbcore.entity.enumeration.AccountType;
 import ru.hits.trb.trbcore.entity.enumeration.Currency;
-import ru.hits.trb.trbcore.exception.BadRequestException;
 import ru.hits.trb.trbcore.exception.InvalidAccountTypeException;
 import ru.hits.trb.trbcore.exception.NotFoundException;
 import ru.hits.trb.trbcore.mapper.AccountMapper;
@@ -43,15 +42,6 @@ public class AccountServiceImpl implements AccountService {
     public AccountDto createClientAccount(NewAccountDto dto) {
         if (dto.getType() == AccountType.MASTER) {
             throw new InvalidAccountTypeException("It's impossible to create account with master type");
-        }
-
-        if (dto.getType() == AccountType.LOAN && dto.getLoanId() == null) {
-            throw new BadRequestException("For loan account value of loanId must be filled in");
-        }
-
-        if (dto.getType() != AccountType.LOAN && dto.getLoanId() != null) {
-            log.warn("Setting null to loan id for non loan account");
-            dto.setLoanId(null);
         }
 
         var accountEntity = accountMapper.newDtoToEntity(dto);
