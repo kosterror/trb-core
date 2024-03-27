@@ -9,22 +9,30 @@ import ru.hits.trb.trbcore.entity.enumeration.Currency;
 
 import java.util.UUID;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED;
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 @Data
 public class NewAccountDto {
 
-    @Schema(description = "Тип счета", example = "DEPOSIT")
+    @Schema(description = "Тип счета", example = "DEPOSIT", requiredMode = REQUIRED)
     @NotNull
     private AccountType type;
 
-    @Schema(description = "Валюта счета", example = "RUB")
+    @Schema(description = "ID кредита, для кредитного счета должно быть заполнено, для остальных игнорируется",
+            requiredMode = NOT_REQUIRED
+    )
+    private UUID loanId;
+
+    @Schema(description = "Валюта счета", example = "RUB", requiredMode = REQUIRED)
     @NotNull
     private Currency currency;
 
-    @Schema(description = "ФИО владельца счета", example = "Иванов Иван Иванович")
+    @Schema(description = "ФИО владельца счета", example = "Иванов Иван Иванович", requiredMode = REQUIRED)
     @NotBlank
     private String clientFullName;
 
-    @Schema(description = "Идентификатор пользователя из trb-users")
+    @Schema(description = "Идентификатор пользователя из trb-users", requiredMode = REQUIRED)
     @NotNull
     private UUID externalClientId;
 

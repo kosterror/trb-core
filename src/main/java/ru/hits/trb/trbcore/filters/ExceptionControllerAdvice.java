@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.hits.trb.trbcore.dto.ErrorResponse;
+import ru.hits.trb.trbcore.exception.BadRequestException;
 import ru.hits.trb.trbcore.exception.InvalidAccountTypeException;
 import ru.hits.trb.trbcore.exception.NotEnoughMoneyException;
 import ru.hits.trb.trbcore.exception.NotFoundException;
@@ -82,6 +83,16 @@ public class ExceptionControllerAdvice {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(buildResponse(ErrorCodes.NOT_ENOUGH_MONEY_FOR_ACTION, exception.getMessage()));
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequestException(HttpServletRequest request,
+                                                                   BadRequestException exception) {
+        logException(request, exception);
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(buildResponse(ErrorCodes.BAD_REQUEST, exception.getMessage()));
     }
 
     private void logException(HttpServletRequest request, Exception exception) {
