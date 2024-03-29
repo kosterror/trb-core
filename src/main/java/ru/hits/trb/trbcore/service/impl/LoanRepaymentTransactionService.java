@@ -33,7 +33,7 @@ public class LoanRepaymentTransactionService implements TransactionService {
 
     @Override
     public TransactionDto process(UUID externalTransactionId, InitTransactionDto initTransaction) {
-        var payerAccount = accountService.findAccount(initTransaction.getPayeeAccountId());
+        var payerAccount = accountService.findAccount(initTransaction.getPayerAccountId());
         var masterAccount = accountService.findMasterAccountWithAmount(
                 initTransaction.getAmount(),
                 initTransaction.getCurrency()
