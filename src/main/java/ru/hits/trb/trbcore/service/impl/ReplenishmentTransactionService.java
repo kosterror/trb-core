@@ -47,10 +47,7 @@ public class ReplenishmentTransactionService implements TransactionService {
                 .type(TransactionType.REPLENISHMENT)
                 .build();
 
-        var payeeAmount = exchangeRateService.getAmount(initTransaction.getAmount(),
-                initTransaction.getCurrency(),
-                account.getCurrency()
-        );
+        var payeeAmount = exchangeRateService.getAmount(initTransaction, account);
 
         account.setBalance(balance.add(payeeAmount));
 

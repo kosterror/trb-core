@@ -10,7 +10,6 @@ import ru.hits.trb.trbcore.dto.transaction.TransactionDto;
 import ru.hits.trb.trbcore.entity.TransactionEntity;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionState;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionType;
-import ru.hits.trb.trbcore.exception.NotEnoughMoneyException;
 import ru.hits.trb.trbcore.mapper.TransactionMapper;
 import ru.hits.trb.trbcore.producer.TransactionCallbackProducer;
 import ru.hits.trb.trbcore.repository.AccountRepository;
@@ -18,6 +17,7 @@ import ru.hits.trb.trbcore.repository.TransactionRepository;
 import ru.hits.trb.trbcore.service.AccountService;
 import ru.hits.trb.trbcore.service.ExchangeRateService;
 import ru.hits.trb.trbcore.service.TransactionService;
+import ru.hits.trb.trbcore.util.BalanceValidator;
 
 import java.util.Date;
 import java.util.UUID;
@@ -37,35 +37,27 @@ public class WithdrawalTransactionService implements TransactionService {
     @Override
     @Transactional
     public TransactionDto process(UUID externalTransactionId, InitTransactionDto initTransaction) {
-        var account = accountService.findAccount(initTransaction.getPayerAccountId());
-        var balance = account.getBalance();
-        var convertedAmount = exchangeRateService.getAmount(initTransaction.getAmount(),
-                initTransaction.getCurrency(),
-                account.getCurrency()
-        );
+        var payerAccount = accountService.findAccount(initTransaction.getPayerAccountId());
+        var payerAmount = exchangeRateService.getAmount(initTransaction, payerAccount);
 
-        if (balance.compareTo(convertedAmount) <= 0) {
-            throw new NotEnoughMoneyException(
-                    StringTemplate.STR."Account \{account.getId()} has only \{account.getBalance()} but it needs \{convertedAmount} in currency \{account.getCurrency()}"
-            );
-        }
+        BalanceValidator.validateBalanceForTransaction(payerAccount, payerAmount);
 
         var transaction = TransactionEntity.builder()
                 .externalId(externalTransactionId)
                 .date(new Date())
-                .payerAccountId(account.getId())
+                .payerAccountId(payerAccount.getId())
                 .amount(initTransaction.getAmount())
                 .currency(initTransaction.getCurrency())
                 .type(TransactionType.WITHDRAWAL)
                 .build();
 
-        account.setBalance(balance.subtract(convertedAmount));
+        payerAccount.setBalance(payerAccount.getBalance().subtract(payerAmount));
 
-        accountRepository.save(account);
+        accountRepository.save(payerAccount);
         transaction = transactionRepository.save(transaction);
 
         log.info("Withdrawal transaction from {} with amount {} in currency {} was completed successfully",
-                account.getId(),
+                payerAccount.getId(),
                 transaction.getAmount(),
                 transaction.getCurrency()
         );

@@ -10,7 +10,6 @@ import ru.hits.trb.trbcore.dto.transaction.TransactionDto;
 import ru.hits.trb.trbcore.entity.TransactionEntity;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionState;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionType;
-import ru.hits.trb.trbcore.exception.NotEnoughMoneyException;
 import ru.hits.trb.trbcore.mapper.TransactionMapper;
 import ru.hits.trb.trbcore.producer.TransactionCallbackProducer;
 import ru.hits.trb.trbcore.repository.AccountRepository;
@@ -18,6 +17,7 @@ import ru.hits.trb.trbcore.repository.TransactionRepository;
 import ru.hits.trb.trbcore.service.AccountService;
 import ru.hits.trb.trbcore.service.ExchangeRateService;
 import ru.hits.trb.trbcore.service.TransactionService;
+import ru.hits.trb.trbcore.util.BalanceValidator;
 
 import java.util.Date;
 import java.util.UUID;
@@ -40,20 +40,10 @@ public class TransferTransactionService implements TransactionService {
         var payeeAccount = accountService.findAccount(initTransaction.getPayeeAccountId());
         var payerAccount = accountService.findAccount(initTransaction.getPayerAccountId());
 
-        var payeeAmount = exchangeRateService.getAmount(initTransaction.getAmount(),
-                initTransaction.getCurrency(),
-                payeeAccount.getCurrency()
-        );
-        var payerAmount = exchangeRateService.getAmount(initTransaction.getAmount(),
-                initTransaction.getCurrency(),
-                payerAccount.getCurrency()
-        );
+        var payeeAmount = exchangeRateService.getAmount(initTransaction, payeeAccount);
+        var payerAmount = exchangeRateService.getAmount(initTransaction, payerAccount);
 
-        if (payerAccount.getBalance().compareTo(payerAmount) <= 0) {
-            throw new NotEnoughMoneyException(
-                    StringTemplate.STR."Account \{payerAccount.getId()} has only \{payerAccount.getBalance()} but it needs \{payerAmount} in currency \{payerAccount.getCurrency()}"
-            );
-        }
+        BalanceValidator.validateBalanceForTransaction(payerAccount, payerAmount);
 
         var transaction = TransactionEntity.builder()
                 .externalId(externalTransactionId)

@@ -17,6 +17,7 @@ import ru.hits.trb.trbcore.repository.TransactionRepository;
 import ru.hits.trb.trbcore.service.AccountService;
 import ru.hits.trb.trbcore.service.ExchangeRateService;
 import ru.hits.trb.trbcore.service.TransactionService;
+import ru.hits.trb.trbcore.util.BalanceValidator;
 
 import java.util.Date;
 import java.util.UUID;
@@ -42,6 +43,11 @@ public class LoanRepaymentTransactionService implements TransactionService {
                 initTransaction.getCurrency()
         );
 
+        var payerAmount = exchangeRateService.getAmount(initTransaction, payerAccount);
+        var payeeAmount = exchangeRateService.getAmount(initTransaction, masterAccount);
+
+        BalanceValidator.validateBalanceForTransaction(payerAccount, payerAmount);
+
         var transaction = TransactionEntity.builder()
                 .externalId(externalTransactionId)
                 .date(new Date())
@@ -51,15 +57,6 @@ public class LoanRepaymentTransactionService implements TransactionService {
                 .currency(initTransaction.getCurrency())
                 .type(TransactionType.LOAN_REPAYMENT)
                 .build();
-
-        var payerAmount = exchangeRateService.getAmount(initTransaction.getAmount(),
-                initTransaction.getCurrency(),
-                payerAccount.getCurrency()
-        );
-        var payeeAmount = exchangeRateService.getAmount(initTransaction.getAmount(),
-                initTransaction.getCurrency(),
-                masterAccount.getCurrency()
-        );
 
         payerAccount.setBalance(payerAccount.getBalance().subtract(payerAmount));
         masterAccount.setBalance(masterAccount.getBalance().add(payeeAmount));

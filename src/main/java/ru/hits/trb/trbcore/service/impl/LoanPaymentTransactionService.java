@@ -3,6 +3,7 @@ package ru.hits.trb.trbcore.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.hits.trb.trbcore.dto.transaction.InitTransactionDto;
 import ru.hits.trb.trbcore.dto.transaction.TransactionCallbackDto;
 import ru.hits.trb.trbcore.dto.transaction.TransactionDto;
@@ -35,6 +36,7 @@ public class LoanPaymentTransactionService implements TransactionService {
     private final ExchangeRateService exchangeRateService;
 
     @Override
+    @Transactional
     public TransactionDto process(UUID externalTransactionId, InitTransactionDto initTransaction) {
         var payeeAccount = accountService.findAccount(initTransaction.getPayeeAccountId());
         var masterAccount = accountService.findMasterAccountWithAmount(
@@ -52,15 +54,8 @@ public class LoanPaymentTransactionService implements TransactionService {
                 .type(TransactionType.LOAN_PAYMENT)
                 .build();
 
-        var payerAmount = exchangeRateService.getAmount(initTransaction.getAmount(),
-                initTransaction.getCurrency(),
-                masterAccount.getCurrency()
-        );
-        var payeeAmount = exchangeRateService.getAmount(initTransaction.getAmount(),
-                initTransaction.getCurrency(),
-                payeeAccount.getCurrency()
-        );
-
+        var payerAmount = exchangeRateService.getAmount(initTransaction, masterAccount);
+        var payeeAmount = exchangeRateService.getAmount(initTransaction, payeeAccount);
 
         payeeAccount.setBalance(payeeAccount.getBalance().add(payeeAmount));
         masterAccount.setBalance(masterAccount.getBalance().subtract(payerAmount));
