@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.hits.trb.trbcore.dto.transaction.InitTransactionDto;
+import ru.hits.trb.trbcore.dto.transaction.TransactionCallbackDto;
 import ru.hits.trb.trbcore.dto.transaction.TransactionDto;
 import ru.hits.trb.trbcore.entity.TransactionEntity;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionState;
 import ru.hits.trb.trbcore.entity.enumeration.TransactionType;
 import ru.hits.trb.trbcore.mapper.TransactionMapper;
 import ru.hits.trb.trbcore.producer.PaymentCallbackProducer;
+import ru.hits.trb.trbcore.producer.TransactionCallbackProducer;
 import ru.hits.trb.trbcore.repository.AccountRepository;
 import ru.hits.trb.trbcore.repository.TransactionRepository;
 import ru.hits.trb.trbcore.service.AccountService;
@@ -29,6 +31,7 @@ public class LoanPaymentTransactionService implements TransactionService {
     private final TransactionRepository transactionRepository;
     private final TransactionMapper transactionMapper;
     private final PaymentCallbackProducer paymentCallbackProducer;
+    private final TransactionCallbackProducer transactionCallbackProducer;
     private final ExchangeRateService exchangeRateService;
 
     @Override
@@ -76,11 +79,23 @@ public class LoanPaymentTransactionService implements TransactionService {
     @Override
     public void onSuccess(TransactionDto transaction) {
         paymentCallbackProducer.sendMessage(transaction.getExternalId(), TransactionState.DONE);
+        transactionCallbackProducer.sendMessage(transaction.getExternalId(),
+                TransactionCallbackDto.builder()
+                        .state(TransactionState.DONE)
+                        .transaction(transaction)
+                        .build()
+        );
     }
 
     @Override
     public void onFailed(UUID externalTransactionId) {
         paymentCallbackProducer.sendMessage(externalTransactionId, TransactionState.REJECTED);
+        transactionCallbackProducer.sendMessage(
+                externalTransactionId,
+                TransactionCallbackDto.builder()
+                        .state(TransactionState.REJECTED)
+                        .build()
+        );
     }
 
 }
