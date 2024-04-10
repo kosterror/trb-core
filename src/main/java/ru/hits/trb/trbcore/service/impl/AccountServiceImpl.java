@@ -84,7 +84,7 @@ public class AccountServiceImpl implements AccountService {
         AccountEntity account = null;
 
         for (var entry : currencyAmountMap.entrySet()) {
-            var accountOptional = accountRepository.findByBalanceIsGreaterThanEqualAndCurrency(
+            var accountOptional = accountRepository.findFirstByBalanceIsGreaterThanEqualAndCurrency(
                     entry.getValue(),
                     entry.getKey()
             );

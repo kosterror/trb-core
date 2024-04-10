@@ -19,6 +19,6 @@ public interface AccountRepository extends JpaRepository<AccountEntity, UUID> {
                                                                                 boolean isClosed
     );
 
-    Optional<AccountEntity> findByBalanceIsGreaterThanEqualAndCurrency(BigDecimal amount, Currency currency);
+    Optional<AccountEntity> findFirstByBalanceIsGreaterThanEqualAndCurrency(BigDecimal amount, Currency currency);
 
 }
