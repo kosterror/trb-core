@@ -1,4 +1,4 @@
-package ru.hits.trb.trbcore.filters;
+package ru.hits.trb.trbcore.filter;
 
 import lombok.experimental.UtilityClass;
 

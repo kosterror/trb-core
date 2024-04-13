@@ -46,5 +46,12 @@ kafka:
       loan-payment-callback: "transaction.loan.payment-callback"
       loan-repayment-callback: "transaction.loan.repayment-callback"
 
+random-error:
+  is-enable: true
+  probability-average: 0.5
+  probability-extreme: 0.9
+  extreme-period-duration-min: 1
+  extreme-period-frequency-min: 2
+
 urls:
   exchange-rate: https://api.coingate.com
