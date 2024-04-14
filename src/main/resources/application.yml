@@ -55,3 +55,15 @@ random-error:
 
 urls:
   exchange-rate: https://api.coingate.com
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - info
+          - health
+          - prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
