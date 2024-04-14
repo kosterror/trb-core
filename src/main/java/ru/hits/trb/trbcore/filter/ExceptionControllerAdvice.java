@@ -8,6 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import ru.hits.trb.trbcore.dto.ErrorResponse;
 import ru.hits.trb.trbcore.exception.BadRequestException;
 import ru.hits.trb.trbcore.exception.InvalidAccountTypeException;
@@ -29,6 +30,12 @@ public class ExceptionControllerAdvice {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(buildResponse(ErrorCodes.INTERNAL_ERROR, "Internal service error"));
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Object> handleResourceNotFound(NoResourceFoundException exception)
+            throws NoResourceFoundException {
+        throw exception;
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
