@@ -25,18 +25,6 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
-logging:
-  level:
-    org:
-      springframework:
-        web:
-          filter:
-            org:
-              springframework:
-                web:
-                  filter:
-                    CommonsRequestLoggingFilter: DEBUG
-
 kafka:
   topic:
     consumer:
