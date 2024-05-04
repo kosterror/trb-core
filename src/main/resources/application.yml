@@ -55,3 +55,9 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+  zipkin:
+    tracing:
+      endpoint: ${GRAFANA_TEMPO_URL}
+  tracing:
+    sampling:
+      probability: 1.0
