@@ -35,6 +35,8 @@ dependencies {
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
 
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
+
     implementation "net.logstash.logback:logstash-logback-encoder:6.6"
     implementation "org.codehaus.janino:janino"
 
