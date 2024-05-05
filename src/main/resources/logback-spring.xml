@@ -4,6 +4,8 @@
 
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
+    <logger name="org.apache.kafka" level="WARN"/>
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
