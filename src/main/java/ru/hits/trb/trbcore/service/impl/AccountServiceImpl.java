@@ -77,16 +77,17 @@ public class AccountServiceImpl implements AccountService {
         Map<Currency, BigDecimal> currencyAmountMap = new HashMap<>();
 
         for (var currency : Currency.values()) {
-            var amount = exchangeRateService.getExchangeRate(fromCurrency, currency);
+            var amount = exchangeRateService.getAmount(fromCurrency, currency, fromAmount);
             currencyAmountMap.put(currency, amount);
         }
 
         AccountEntity account = null;
 
         for (var entry : currencyAmountMap.entrySet()) {
-            var accountOptional = accountRepository.findFirstByBalanceIsGreaterThanEqualAndCurrency(
+            var accountOptional = accountRepository.findFirstByBalanceIsGreaterThanEqualAndCurrencyAndType(
                     entry.getValue(),
-                    entry.getKey()
+                    entry.getKey(),
+                    AccountType.MASTER
             );
 
             if (accountOptional.isPresent()) {

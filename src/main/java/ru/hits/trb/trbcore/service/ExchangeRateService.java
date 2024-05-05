@@ -12,4 +12,5 @@ public interface ExchangeRateService {
 
     BigDecimal getAmount(InitTransactionDto initTransaction, AccountEntity accountWithDestinationCurrency);
 
+    BigDecimal getAmount(Currency from, Currency to, BigDecimal amount);
 }

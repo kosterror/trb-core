@@ -34,4 +34,12 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
                 .setScale(2, RoundingMode.DOWN);
     }
 
+    @Override
+    public BigDecimal getAmount(Currency from, Currency to, BigDecimal amount) {
+        var exchangeRate = getExchangeRate(from, to);
+
+        return amount.multiply(exchangeRate)
+                .setScale(2, RoundingMode.DOWN);
+    }
+
 }
